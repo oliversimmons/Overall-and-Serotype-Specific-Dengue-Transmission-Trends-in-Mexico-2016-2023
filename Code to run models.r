@@ -19,11 +19,11 @@ mex_pop_mat_no0 <- as.matrix(mex_pop_age_state_no0[, 3:18])
 
 mod_imai <- rstan::stan_model(file = "Model from Imai et al. 2016 (Model 1).stan")
 
-nT <- 8
-nA <- ncol(mex_cases_mat_no0) 
+nT <- 8 #Number of years running model for
+nA <- ncol(mex_cases_mat_no0) #Number of age groups
 
-age_min_imai <- c(1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75)
-age_max_imai <- c(5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 119)
+age_min_imai <- c(1, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75) #Minimum age in age groups 
+age_max_imai <- c(5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 119) #Maximum age in age groups
 
 fit_imai <- vector(mode = "list", length = 32)
 
@@ -38,10 +38,10 @@ for(i in seq(1, 32)[-c(2, 6, 29)]){
   
   fit_imai[[i]] <- rstan::sampling(mod_imai,
                                    data = data,
-                                   chains = 3,
-                                   iter = 6000, 
-                                   warmup = 1000,
-                                   cores = 3, 
+                                   chains = 3, #number of chains
+                                   iter = 6000, #number of iterations for each chain
+                                   warmup = 1000, #number of these iterations which are warmup
+                                   cores = 3, #run chains in parallel
                                    refresh = 100)
 }
 
@@ -99,12 +99,12 @@ run_model <- function(state, mex_cases_mat, mex_pop_mat){
   
   mod <- rstan::stan_model(file = "Non-serotype-specific Model (Model 5).stan")
   
-  nT <- 8
-  nA <- ncol(mex_cases_mat) 
+  nT <- 8  #Number of years running model for
+  nA <- ncol(mex_cases_mat) #Number of age groups
   
-  age_min <- c(2, 6, 11, 16, 21, 26, 31, 36, 41, 46, 51, 56, 61, 66, 71, 76)
-  age_max <- c(5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 119)
-  age <- seq(0,118)
+  age_min <- c(2, 6, 11, 16, 21, 26, 31, 36, 41, 46, 51, 56, 61, 66, 71, 76) #Minimum age in age groups 
+  age_max <- c(5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 119) #Maximum age in age groups
+  age <- seq(0,118) #Sequence of total number of age years
   
   data <- list(nA = nA, 
                nT = nT,  
@@ -116,11 +116,12 @@ run_model <- function(state, mex_cases_mat, mex_pop_mat){
   
   fit <- rstan::sampling(mod,
                          data = data,
-                         chains = 3,
-                         iter = 6000, 
-                         warmup = 1000,
-                         cores = 3, 
+                         chains = 3, #number of chains
+                         iter = 6000, #number of iterations for each chain
+                         warmup = 1000, #number of these iterations which are warmup
+                         cores = 3, #run chains in parallel 
                          refresh = 100)
+  
   saveRDS(fit, file  = paste0("fit_output_m5_", state, ".rds"))
   
   chains <- rstan::extract(fit)
@@ -139,12 +140,12 @@ run_model <- function(state, mex_cases_mat, mex_pop_mat){
 
 #eg:
 
-run_model(1, mex_cases_mat_no0, mex_pop_mat_no0)
+run_model(17, mex_cases_mat_no0, mex_pop_mat_no0) #State 17 (alphabetically) is Morelos, check using mex_states_order
 
 chains_m5 <- vector(mode = "list", length = 32)
 
 #for(i in seq(1, 31)[-c(2, 6, 29)]){ #this is all states
-for(i in 1:1){
+for(i in 17:17){
     chains_m5[[i]] <- readRDS(paste0("chains_m5_", i, ".rds"))
 }
 
@@ -159,7 +160,7 @@ lam_H_m5 <- vector(mode = "list", length = 32)
 pars_m5 <- vector(mode = "list", length = 32)
 
 #for (i in seq(1, 31)[-c(2, 6, 29)]) { #this is all states
-for(i in 1:1){
+for(i in 17:17){
   rho_m5[[i]] <-
     quantile(chains_m5[[i]]$report[,1], c(0.5, 0.025, 0.975))
   gamma_m5[[i]] <-
@@ -185,7 +186,7 @@ pars_df_m5 <- bind_rows(pars_m5)
 lam_m5 <- vector(mode = "list", length = 32)
 
 #for (i in seq(1, 31)[-c(2, 6, 29)]) { #this is all states
-for(i in 1:1){
+for(i in 17:17){
   lam_m5[[i]] <- data.frame(
     t = seq(1, data$nT),
     #time sequence
@@ -483,12 +484,13 @@ run_model_m6 <- function(state, cases, pop){
   
   fit <- rstan::sampling(mod,
                          data = data,
-                         chains = 3,
-                         iter = 6000, 
-                         warmup = 1000,
-                         cores = 3, 
+                         chains = 3, #number of chains
+                         iter = 6000, #number of iterations for each chain
+                         warmup = 1000, #number of these iterations which are warmup
+                         cores = 3, #run chains in parallel  
                          refresh = 100,
                          init = init_values)
+  
   
   saveRDS(fit, file  = paste0("fit_output_m6_", state, ".rds"))
   
@@ -508,7 +510,7 @@ run_model_m6 <- function(state, cases, pop){
 
 #eg:
 
-run_model_m6(5, cases, mex_pop_mat_no0)
+run_model_m6(5, cases, mex_pop_mat_no0)  #State 5 (alphabetically) is Chiapas, check using mex_states_order
 
 chains_m6 <- vector(mode = "list", length = 32)
 
