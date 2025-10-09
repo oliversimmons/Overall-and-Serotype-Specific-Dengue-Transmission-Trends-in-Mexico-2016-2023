@@ -27,12 +27,12 @@ transformed data {
 
 parameters {
 
-  simplex[4] lam_H; // historic average FOI
-  array[nT] simplex[4] lam_t; // time varying FOI
-  vector<lower=0, upper=1>[2] report;
+  simplex[4] lam_H; // historic average serotype FOI proportions
+  array[nT] simplex[4] lam_t; // time varying yeraly serotype FOI proportions 
+  vector<lower=0, upper=1>[2] report; //primary and secondary reporting rates now combined into one vector
   real<lower=0, upper = min(1./report)> chi; // relative reporting rate of children aged 1-15 yrs old
-  real<lower=0, upper=1> sigma_H;
-  array[nT] real<lower=0, upper=1> sigma_t;
+  real<lower=0, upper=1> sigma_H; //total historic FOI (multiplier for lam_H as using dirichlet distribution)
+  array[nT] real<lower=0, upper=1> sigma_t; ; //yearly total FOI (multiplier for lam_t as using dirichlet distribution)
 
 }
 
@@ -193,7 +193,7 @@ if(nT >= 2){
 model {
 
   //--- priors
-  row_vector[4] alpha = [1, 1, 1, 1];
+  row_vector[4] alpha = [1, 1, 1, 1]; //so dirichlet prior symmetric
   for (t in 1:nT) {
     lam_t[t] ~ dirichlet(alpha);
   }
